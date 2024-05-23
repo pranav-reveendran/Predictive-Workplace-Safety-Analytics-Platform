@@ -1,0 +1,156 @@
+# Predictive Workplace Safety Analytics Platform Configuration
+
+# Database Configuration
+database:
+  host: "localhost"
+  port: 5432
+  database: "workplace_safety"
+  username: "your_username"
+  password: "your_password"
+  schema: "public"
+  
+# Data Sources
+data_sources:
+  osha:
+    enforcement_data_url: "https://enforcedata.dol.gov/views/data_catalogs.php"
+    inspection_data_path: "data/raw/osha_inspections.csv"
+    violation_data_path: "data/raw/osha_violations.csv"
+    accident_data_path: "data/raw/osha_accidents.csv"
+  
+  processed:
+    features_path: "data/processed/features.csv"
+    target_path: "data/processed/target.csv"
+    train_test_split_path: "data/processed/train_test_split.pkl"
+
+# Model Configuration
+models:
+  ensemble:
+    random_forest:
+      n_estimators: 200
+      max_depth: 15
+      min_samples_split: 5
+      min_samples_leaf: 2
+      class_weight: "balanced"
+      random_state: 42
+    
+    xgboost:
+      n_estimators: 200
+      learning_rate: 0.1
+      max_depth: 6
+      subsample: 0.8
+      colsample_bytree: 0.8
+      scale_pos_weight: 1
+      random_state: 42
+    
+    ensemble_method: "stacking"  # Options: "stacking", "voting"
+    meta_learner: "logistic_regression"
+    
+  target_variable:
+    definition: "binary_injury"  # Options: "binary_injury", "severity_multiclass"
+    injury_threshold_days: 0  # Days away from work to classify as injury
+    
+  performance_targets:
+    accuracy: 0.84
+    precision_high_risk: 0.82
+    recall_high_risk: 0.79
+    f1_score: 0.80
+    auc_roc: 0.87
+
+# Feature Engineering
+feature_engineering:
+  temporal_features:
+    - "month_of_inspection"
+    - "quarter_of_inspection"
+    - "days_since_last_inspection"
+    - "inspection_frequency_last_year"
+    
+  industry_features:
+    - "naics_2_digit_risk_score"
+    - "naics_4_digit_risk_score"
+    - "high_hazard_industry_flag"
+    
+  violation_features:
+    - "violation_count_last_year"
+    - "serious_violation_rate"
+    - "repeat_violation_flag"
+    - "willful_violation_flag"
+    - "penalty_amount_normalized"
+    
+  text_features:
+    enable_nlp: false  # Set to true for advanced NLP features
+    max_features: 1000
+    min_df: 2
+    max_df: 0.95
+
+# Data Processing
+data_processing:
+  missing_value_strategy:
+    numerical: "median"  # Options: "mean", "median", "mode", "drop"
+    categorical: "mode"   # Options: "mode", "constant", "drop"
+    
+  outlier_handling:
+    method: "iqr"  # Options: "iqr", "zscore", "isolation_forest"
+    threshold: 1.5
+    
+  class_imbalance:
+    method: "smote"  # Options: "smote", "random_oversample", "random_undersample"
+    sampling_strategy: "auto"
+    
+  validation:
+    test_size: 0.2
+    validation_size: 0.2
+    cv_folds: 5
+    stratify: true
+    random_state: 42
+
+# Logging Configuration
+logging:
+  level: "INFO"  # Options: "DEBUG", "INFO", "WARNING", "ERROR"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file_path: "logs/safety_analytics.log"
+  max_bytes: 10485760  # 10MB
+  backup_count: 5
+
+# Monitoring & Alerts
+monitoring:
+  model_performance_threshold: 0.75
+  data_drift_threshold: 0.1
+  prediction_confidence_threshold: 0.7
+  
+  alerts:
+    email_enabled: false
+    email_recipients: []
+    slack_webhook_url: ""
+
+# API Configuration (Optional)
+api:
+  host: "0.0.0.0"
+  port: 8000
+  title: "Workplace Safety Analytics API"
+  version: "1.0.0"
+  description: "API for workplace safety risk predictions"
+  
+# Tableau Configuration
+tableau:
+  server_url: "https://your-tableau-server.com"
+  site_id: "your_site"
+  username: "tableau_user"
+  password: "tableau_password"
+  project_name: "Workplace Safety Analytics"
+  datasource_name: "OSHA Safety Data"
+
+# Security & Privacy
+security:
+  data_anonymization: true
+  encryption_key_path: "config/encryption.key"
+  audit_logging: true
+  
+# Environment
+environment: "development"  # Options: "development", "staging", "production"
+
+# Paths
+paths:
+  models: "models/"
+  logs: "logs/"
+  exports: "exports/"
+  reports: "reports/" 
