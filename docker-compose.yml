@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:14
+    container_name: safety_analytics_db
+    environment:
+      POSTGRES_DB: workplace_safety
+      POSTGRES_USER: safety_user
+      POSTGRES_PASSWORD: safety_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U safety_user -d workplace_safety"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Safety Analytics Application
+  safety_analytics:
+    build: .
+    container_name: safety_analytics_app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=workplace_safety
+      - DATABASE_USER=safety_user
+      - DATABASE_PASSWORD=safety_password
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./logs:/app/logs
+      - ./config:/app/config
+    command: >
+      bash -c "
+        echo 'Waiting for database...' &&
+        sleep 10 &&
+        python src/database/init_db.py &&
+        python src/data/download_osha_data.py &&
+        python src/data/process_data.py &&
+        python src/models/train_model.py
+      "
+
+  # Jupyter Notebook (for development/analysis)
+  jupyter:
+    build: .
+    container_name: safety_analytics_jupyter
+    depends_on:
+      - postgres
+    ports:
+      - "8888:8888"
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=workplace_safety
+      - DATABASE_USER=safety_user
+      - DATABASE_PASSWORD=safety_password
+    volumes:
+      - ./notebooks:/app/notebooks
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./src:/app/src
+    command: >
+      jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+        --NotebookApp.token='' --NotebookApp.password=''
+
+  # Optional: ML Model API
+  model_api:
+    build: .
+    container_name: safety_analytics_api
+    depends_on:
+      - postgres
+      - safety_analytics
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=workplace_safety
+      - DATABASE_USER=safety_user
+      - DATABASE_PASSWORD=safety_password
+    volumes:
+      - ./models:/app/models
+      - ./config:/app/config
+    command: python src/api/main.py
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    name: safety_analytics_network 
