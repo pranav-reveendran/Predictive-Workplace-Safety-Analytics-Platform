@@ -57,6 +57,26 @@ This platform transforms workplace safety from reactive to proactive by leveragi
 └── requirements.txt          # Python dependencies
 ```
 
+## 📊 Dashboard Visualizations
+
+Transform complex safety data into actionable insights with our comprehensive dashboard system:
+
+### Key Dashboard Components
+- **84% Predictive Accuracy** - Ensemble model performance targeting workplace injury prediction
+- **50K+ OSHA Records Analysis** - Large-scale data processing for pattern identification  
+- **$43K Cost Per Injury** - Economic impact quantification driving prevention investments
+- **Real-time Risk Prediction** - 1,026 high-risk sites identified for proactive intervention
+- **Violation Pattern Analysis** - Fall Protection identified as top risk factor
+- **Industry Benchmarking** - Cross-sector risk comparison and performance tracking
+
+### Data-to-Insight Pipeline
+1. **OSHA Records** → Raw Inspection & Violation Data
+2. **Python & Scikit-learn** → ML Pipeline & Ensemble Modeling  
+3. **PostgreSQL** → Store Processed Data & Predictions
+4. **Tableau Dashboard** → Visualize Trends & Optimize Strategy
+
+*Dashboard images and detailed visualizations are available in the [`docs/images/`](docs/images/) directory.*
+
 ## 🚀 Quick Start
 
 ### Prerequisites
